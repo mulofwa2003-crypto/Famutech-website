@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>FAMUTECH Admin</title>
+<style>
+  :root{
+    --navy-deep:#071a33; --navy:#0e2a52; --gold:#d4a017; --gold-bright:#f0c14b;
+    --paper:#f4f1e8; --ink:#101418; --ink-soft:#4a5464; --line:#243b5c; --radius:4px;
+    --danger:#b0392f; --ok:#1e7d4c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:-apple-system,'Segoe UI',Arial,sans-serif; background:var(--paper); color:var(--ink);}
+  .topbar{background:var(--navy-deep); color:#fff; padding:16px 24px; display:flex; justify-content:space-between; align-items:center;}
+  .topbar strong{color:#fff;} .topbar span{color:var(--gold-bright);}
+  .wrap{max-width:900px; margin:0 auto; padding:32px 20px 80px;}
+  a{color:var(--navy);}
+
+  /* Login screen */
+  .login-shell{
+    min-height:80vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .login-card{
+    background:#fff; border:1px solid #ddd3ae; border-radius:var(--radius); padding:34px 30px;
+    width:100%; max-width:380px;
+  }
+  .login-card h1{font-size:1.3rem; margin:0 0 6px; color:var(--navy-deep);}
+  .login-card p.sub{color:var(--ink-soft); font-size:0.88rem; margin:0 0 22px;}
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:0.85rem; font-weight:600; margin-bottom:6px;}
+  .pw-row{display:flex; gap:8px;}
+  .pw-row input{flex:1;}
+  input, textarea, select{
+    width:100%; padding:10px 12px; border:1px solid #cdc4a6; border-radius:var(--radius);
+    font-size:0.95rem; font-family:inherit; background:#fbf9f2;
+  }
+  button{
+    cursor:pointer; border:none; border-radius:var(--radius); font-weight:600; font-size:0.95rem;
+    padding:11px 18px;
+  }
+  .btn-primary{background:var(--gold); color:var(--navy-deep); width:100%;}
+  .btn-primary:hover{background:var(--gold-bright);}
+  .btn-ghost{background:#eee6c9; color:var(--navy-deep);}
+  .btn-danger{background:var(--danger); color:#fff;}
+  .toggle-btn{background:#e9e2c6; color:var(--navy-deep); padding:0 12px;}
+  .msg{font-size:0.85rem; margin-top:12px; padding:10px 12px; border-radius:var(--radius);}
+  .msg.error{background:#fbeceb; color:var(--danger); border:1px solid #eec6c2;}
+  .msg.ok{background:#e9f6ee; color:var(--ok); border:1px solid #bfe4cd;}
+  .lock-note{font-size:0.8rem; color:var(--ink-soft); margin-top:10px;}
+
+  /* Dashboard */
+  .card{background:#fff; border:1px solid #e4ddc9; border-radius:var(--radius); padding:22px 24px; margin-bottom:22px;}
+  .card h2{font-size:1.1rem; color:var(--navy-deep); margin:0 0 4px;}
+  .card p.help{color:var(--ink-soft); font-size:0.85rem; margin:0 0 16px;}
+  .two-col{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .pkg-block{border-top:1px dashed #ddd3ae; padding-top:16px; margin-top:16px;}
+  .pkg-block:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  .row{margin-bottom:12px;}
+  .row label{display:block; font-size:0.82rem; font-weight:600; margin-bottom:5px; color:var(--navy);}
+  .checkbox-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
+  .checkbox-row input{width:auto;}
+  .gallery-row{display:grid; grid-template-columns:24px 1fr; gap:10px; align-items:center; margin-bottom:10px;}
+  .gallery-row span{color:var(--ink-soft); font-size:0.85rem;}
+  .sticky-actions{
+    position:sticky; bottom:0; background:var(--paper); padding:16px 0; display:flex; gap:12px;
+    border-top:1px solid #ddd3ae; flex-wrap:wrap;
+  }
+  .session-note{font-size:0.78rem; color:#9fb0c8;}
+  .security-notes{background:#fdf8e9; border:1px dashed var(--gold); border-radius:var(--radius); padding:16px 18px; font-size:0.85rem; color:#6b5716; margin-bottom:22px;}
+  .security-notes h3{margin:0 0 8px; font-size:0.95rem; color:#6b5716;}
+  .security-notes ul{margin:0; padding-left:18px;}
+  #dashboard{display:none;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div><strong>FAMUTECH</strong> <span>Admin</span></div>
+  <div id="topbarRight"></div>
+</div>
+
+<!-- ============== LOGIN ============== -->
+<div class="login-shell" id="loginShell">
+  <div class="login-card">
+    <h1>Admin sign in</h1>
+    <p class="sub">Update your prices, gallery captions and testimonials.</p>
+    <form id="loginForm" autocomplete="off">
+      <div class="field">
+        <label for="loginPassword">Password</label>
+        <div class="pw-row">
+          <input type="password" id="loginPassword" autocomplete="new-password" required>
+          <button type="button" class="toggle-btn" id="togglePw">Show</button>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary" id="loginBtn">Sign in</button>
+      <div id="loginMsg"></div>
+      <p class="lock-note">Default password is <code>famutech2026</code>. Change it below after signing in.</p>
+    </form>
+  </div>
+</div>
+
+<!-- ============== DASHBOARD ============== -->
+<div class="wrap" id="dashboard">
+
+  <div class="security-notes">
+    <h3>Good to know about this admin page</h3>
+    <ul>
+      <li>This is a static website with no server or database, so this login can't be bank-grade secure — treat it as a lock on the door, not a vault. Don't use a password you use anywhere important.</li>
+      <li>Editing here changes what <em>you</em> see in this browser. To update the live site for everyone, click <strong>Download content.js</strong> below and upload that file over the existing one in your hosting/repo.</li>
+      <li>Your session signs out automatically after 30 minutes of inactivity, or whenever you close this tab.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>Contact numbers</h2>
+    <p class="help">Used for the WhatsApp buttons, call button and quote form.</p>
+    <div class="two-col">
+      <div class="row">
+        <label for="c-phone">Phone (with country code)</label>
+        <input type="text" id="c-phone" placeholder="+260777378959">
+      </div>
+      <div class="row">
+        <label for="c-wa">WhatsApp number (digits only, no +)</label>
+        <input type="text" id="c-wa" placeholder="260777378959">
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="packagesCard">
+    <h2>Solar packages &amp; prices</h2>
+    <p class="help">Edit the three package tiers. List one feature per line.</p>
+    <!-- package blocks injected by JS -->
+  </div>
+
+  <div class="card" id="galleryCard">
+    <h2>Gallery captions</h2>
+    <p class="help">These are the labels shown under each project photo tile.</p>
+    <!-- gallery rows injected by JS -->
+  </div>
+
+  <div class="card" id="testimonialsCard">
+    <h2>Customer testimonials</h2>
+    <p class="help">Three customer quotes shown on the site.</p>
+    <!-- testimonial blocks injected by JS -->
+  </div>
+
+  <div class="card">
+    <h2>Change admin password</h2>
+    <p class="help">This only changes the password on this browser/device. To change it everywhere, edit the <code>ADMIN_PASSWORD_HASH</code> value in admin.html and re-upload it.</p>
+    <div class="two-col">
+      <div class="row">
+        <label for="pw-current">Current password</label>
+        <input type="password" id="pw-current" autocomplete="new-password">
+      </div>
+      <div class="row">
+        <label for="pw-new">New password</label>
+        <input type="password" id="pw-new" autocomplete="new-password">
+      </div>
+    </div>
+    <button class="btn-ghost" id="changePwBtn">Update password (this device)</button>
+    <div id="pwMsg"></div>
+  </div>
+
+  <div class="sticky-actions">
+    <button class="btn-primary" id="downloadBtn" style="width:auto;">Download updated content.js</button>
+    <button class="btn-ghost" id="logoutBtn">Log out</button>
+    <span class="session-note" id="sessionNote"></span>
+  </div>
+  <div id="saveMsg"></div>
+</div>
+
+<script src="content.js"></script>
+<script>
+/* =========================================================
+   FAMUTECH Admin — client-side password gate + content editor
+   NOTE: This is a static site with no backend. This login
+   deters casual visitors from finding the editor; it is not
+   equivalent to server-verified authentication. Real login
+   security (rate-limited on a server, can't be bypassed by
+   viewing source) requires actual hosting with a backend.
+   ========================================================= */
+
+// SHA-256 of the current admin password. Default = "famutech2026".
+// To set your own permanent password: type it into the "Change
+// admin password" form after logging in, which will show you the
+// new hash to paste in here, OR just change the password from the
+// dashboard (device-only, see note in that card).
+let ADMIN_PASSWORD_HASH = "6583847b93b7bc06e7d61390f557f8a63fd0885028d83148b39f6893fb3d5f1e";
+
+const LOCKOUT_KEY = "famutech_admin_lockout";
+const SESSION_KEY = "famutech_admin_session";
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_WINDOW_MS = 15 * 60 * 1000; // 15 min
+const SESSION_LENGTH_MS = 30 * 60 * 1000; // 30 min
+
+async function sha256(text){
+  const enc = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function getLockoutState(){
+  try { return JSON.parse(localStorage.getItem(LOCKOUT_KEY)) || {attempts:0, firstFail:0}; }
+  catch(e){ return {attempts:0, firstFail:0}; }
+}
+function setLockoutState(s){ localStorage.setItem(LOCKOUT_KEY, JSON.stringify(s)); }
+function clearLockout(){ localStorage.removeItem(LOCKOUT_KEY); }
+
+function isLockedOut(){
+  const s = getLockoutState();
+  if (s.attempts >= MAX_ATTEMPTS){
+    const elapsed = Date.now() - s.firstFail;
+    if (elapsed < LOCKOUT_WINDOW_MS) return Math.ceil((LOCKOUT_WINDOW_MS - elapsed) / 60000);
+    clearLockout();
+  }
+  return 0;
+}
+
+function startSession(){
+  sessionStorage.setItem(SESSION_KEY, JSON.stringify({expiry: Date.now() + SESSION_LENGTH_MS}));
+}
+function sessionValid(){
+  try{
+    const s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    return s && s.expiry > Date.now();
+  }catch(e){ return false; }
+}
+function endSession(){ sessionStorage.removeItem(SESSION_KEY); }
+
+// ---- Login form ----
+const loginShell = document.getElementById('loginShell');
+const dashboard = document.getElementById('dashboard');
+const loginForm = document.getElementById('loginForm');
+const loginMsg = document.getElementById('loginMsg');
+const loginPw = document.getElementById('loginPassword');
+const loginBtn = document.getElementById('loginBtn');
+
+document.getElementById('togglePw').addEventListener('click', () => {
+  loginPw.type = loginPw.type === 'password' ? 'text' : 'password';
+  document.getElementById('togglePw').textContent = loginPw.type === 'password' ? 'Show' : 'Hide';
+});
+
+function showLoginMsg(text, type){
+  loginMsg.innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+
+function checkLockUI(){
+  const mins = isLockedOut();
+  if (mins > 0){
+    loginBtn.disabled = true;
+    showLoginMsg(`Too many failed attempts. Try again in about ${mins} minute(s).`, 'error');
+    return true;
+  }
+  loginBtn.disabled = false;
+  return false;
+}
+
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (checkLockUI()) return;
+  const storedHash = localStorage.getItem('famutech_admin_pwhash_override') || ADMIN_PASSWORD_HASH;
+  const enteredHash = await sha256(loginPw.value);
+  if (enteredHash === storedHash){
+    clearLockout();
+    startSession();
+    loginPw.value = '';
+    enterDashboard();
+  } else {
+    const s = getLockoutState();
+    const now = Date.now();
+    if (s.attempts === 0 || (now - s.firstFail) > LOCKOUT_WINDOW_MS){
+      setLockoutState({attempts:1, firstFail:now});
+    } else {
+      setLockoutState({attempts:s.attempts + 1, firstFail:s.firstFail});
+    }
+    checkLockUI() || showLoginMsg('Incorrect password.', 'error');
+  }
+});
+
+// ---- Dashboard rendering ----
+function enterDashboard(){
+  loginShell.style.display = 'none';
+  dashboard.style.display = 'block';
+  document.getElementById('topbarRight').innerHTML = '<span class="session-note">Signed in</span>';
+  renderDashboard();
+  updateSessionNote();
+}
+
+function requireSession(){
+  if (!sessionValid()){
+    endSession();
+    loginShell.style.display = 'flex';
+    dashboard.style.display = 'none';
+    document.getElementById('topbarRight').innerHTML = '';
+  }
+}
+setInterval(requireSession, 15000);
+
+function updateSessionNote(){
+  document.getElementById('sessionNote').textContent = 'Session active for up to 30 minutes of inactivity.';
+}
+
+const DEFAULT_CONTENT = {
+  contact: { phone: "+260777378959", whatsappNumber: "260777378959" },
+  packages: [
+    {name:"Starter Home", sub:"", price:"K 0", priceSuffix:"+", features:[], featured:false, badge:""},
+    {name:"Family Home", sub:"", price:"K 0", priceSuffix:"+", features:[], featured:true, badge:"Most popular"},
+    {name:"Business / Office", sub:"", price:"K 0", priceSuffix:"+", features:[], featured:false, badge:""}
+  ],
+  gallery: Array.from({length:8}, () => ({label:""})),
+  testimonials: Array.from({length:3}, () => ({quote:"", name:"", location:""}))
+};
+
+function currentContent(){
+  return (typeof SITE_CONTENT !== 'undefined') ? SITE_CONTENT : DEFAULT_CONTENT;
+}
+
+function renderDashboard(){
+  const c = currentContent();
+
+  document.getElementById('c-phone').value = c.contact.phone;
+  document.getElementById('c-wa').value = c.contact.whatsappNumber;
+
+  const pkgCard = document.getElementById('packagesCard');
+  pkgCard.querySelectorAll('.pkg-block').forEach(el => el.remove());
+  c.packages.forEach((p, i) => {
+    const block = document.createElement('div');
+    block.className = 'pkg-block';
+    block.innerHTML = `
+      <div class="two-col">
+        <div class="row"><label>Package name</label><input type="text" data-pkg="${i}" data-field="name" value="${escapeAttr(p.name)}"></div>
+        <div class="row"><label>Subtitle</label><input type="text" data-pkg="${i}" data-field="sub" value="${escapeAttr(p.sub||'')}"></div>
+      </div>
+      <div class="two-col">
+        <div class="row"><label>Price</label><input type="text" data-pkg="${i}" data-field="price" value="${escapeAttr(p.price)}"></div>
+        <div class="row"><label>Price suffix (e.g. "+")</label><input type="text" data-pkg="${i}" data-field="priceSuffix" value="${escapeAttr(p.priceSuffix||'')}"></div>
+      </div>
+      <div class="row"><label>Features (one per line)</label><textarea rows="4" data-pkg="${i}" data-field="features">${(p.features||[]).join('\n')}</textarea></div>
+      <div class="row"><label>Badge text (shown if featured)</label><input type="text" data-pkg="${i}" data-field="badge" value="${escapeAttr(p.badge||'')}"></div>
+      <div class="checkbox-row"><input type="checkbox" data-pkg="${i}" data-field="featured" ${p.featured ? 'checked' : ''}> <label style="margin:0;">Feature this package (highlighted card)</label></div>
+    `;
+    pkgCard.appendChild(block);
+  });
+
+  const galCard = document.getElementById('galleryCard');
+  galCard.querySelectorAll('.gallery-row').forEach(el => el.remove());
+  c.gallery.forEach((g, i) => {
+    const row = document.createElement('div');
+    row.className = 'gallery-row';
+    row.innerHTML = `<span>${i+1}.</span><input type="text" data-gallery="${i}" value="${escapeAttr(g.label)}">`;
+    galCard.appendChild(row);
+  });
+
+  const testCard = document.getElementById('testimonialsCard');
+  testCard.querySelectorAll('.pkg-block').forEach(el => el.remove());
+  c.testimonials.forEach((t, i) => {
+    const block = document.createElement('div');
+    block.className = 'pkg-block';
+    block.innerHTML = `
+      <div class="row"><label>Quote</label><textarea rows="2" data-test="${i}" data-field="quote">${escapeHtml(t.quote)}</textarea></div>
+      <div class="two-col">
+        <div class="row"><label>Customer name</label><input type="text" data-test="${i}" data-field="name" value="${escapeAttr(t.name)}"></div>
+        <div class="row"><label>Location</label><input type="text" data-test="${i}" data-field="location" value="${escapeAttr(t.location)}"></div>
+      </div>
+    `;
+    testCard.appendChild(block);
+  });
+}
+
+function escapeAttr(s){ return (s||'').replace(/"/g,'&quot;'); }
+function escapeHtml(s){ return (s||'').replace(/</g,'&lt;'); }
+
+function collectContent(){
+  const c = JSON.parse(JSON.stringify(currentContent()));
+  c.contact.phone = document.getElementById('c-phone').value.trim();
+  c.contact.whatsappNumber = document.getElementById('c-wa').value.trim().replace(/[^0-9]/g,'');
+
+  document.querySelectorAll('[data-pkg]').forEach(el => {
+    const i = +el.getAttribute('data-pkg');
+    const field = el.getAttribute('data-field');
+    if (field === 'featured') c.packages[i].featured = el.checked;
+    else if (field === 'features') c.packages[i].features = el.value.split('\n').map(s=>s.trim()).filter(Boolean);
+    else c.packages[i][field] = el.value.trim();
+  });
+
+  document.querySelectorAll('[data-gallery]').forEach(el => {
+    const i = +el.getAttribute('data-gallery');
+    c.gallery[i] = { label: el.value.trim() };
+  });
+
+  document.querySelectorAll('[data-test]').forEach(el => {
+    const i = +el.getAttribute('data-test');
+    const field = el.getAttribute('data-field');
+    c.testimonials[i][field] = el.value.trim();
+  });
+
+  return c;
+}
+
+function toContentJs(c){
+  return `/*
+  FAMUTECH — SITE CONTENT
+  ------------------------------------------------------------
+  Edited via admin.html. Upload this file over the existing
+  content.js in your hosting/repo to update the live site.
+  ------------------------------------------------------------
+*/
+const SITE_CONTENT = ${JSON.stringify(c, null, 2)};
+`;
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const c = collectContent();
+  const blob = new Blob([toContentJs(c)], {type:'text/javascript'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'content.js';
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  document.getElementById('saveMsg').innerHTML = '<div class="msg ok">content.js downloaded. Upload it over the old one in your hosting/repo to make these changes go live for everyone.</div>';
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  endSession();
+  location.reload();
+});
+
+document.getElementById('changePwBtn').addEventListener('click', async () => {
+  const current = document.getElementById('pw-current').value;
+  const next = document.getElementById('pw-new').value;
+  const pwMsg = document.getElementById('pwMsg');
+  const storedHash = localStorage.getItem('famutech_admin_pwhash_override') || ADMIN_PASSWORD_HASH;
+  if (await sha256(current) !== storedHash){
+    pwMsg.innerHTML = '<div class="msg error">Current password is incorrect.</div>';
+    return;
+  }
+  if (!next || next.length < 6){
+    pwMsg.innerHTML = '<div class="msg error">New password should be at least 6 characters.</div>';
+    return;
+  }
+  const newHash = await sha256(next);
+  localStorage.setItem('famutech_admin_pwhash_override', newHash);
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+  pwMsg.innerHTML = `<div class="msg ok">Password updated for this browser. To make this the permanent password on every device, replace <code>ADMIN_PASSWORD_HASH</code> in admin.html with: <br><code style="word-break:break-all;">${newHash}</code></div>`;
+});
+
+// ---- On load ----
+if (sessionValid()){
+  enterDashboard();
+} else {
+  checkLockUI();
+}
+</script>
+</body>
+</html>
